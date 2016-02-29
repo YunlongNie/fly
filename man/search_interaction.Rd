@@ -11,8 +11,6 @@ search_interaction(input_interactions, type = c("all", "ppi", "rna", "tf",
 \item{input_interactions}{data.frame with two cols}
 
 \item{type}{interaction type one of 'all',"ppi","rna","tf","generic"}
-
-\item{type}{interaction type one of 'all',"ppi","rna","tf","generic"}
 }
 \description{
 This function identity search the interactions in the flybase data
