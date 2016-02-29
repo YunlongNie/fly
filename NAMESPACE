@@ -2,5 +2,6 @@
 
 export(matched_id)
 export(mergeIDs)
+export(search_interaction)
 import(dplyr)
 import(tidyr)
