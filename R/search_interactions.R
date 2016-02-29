@@ -73,7 +73,7 @@ if (s=="genetic")
 {
 
 data(fly_genetic_interactions)
-fly_genetic_interactions= temp%>%rename(id1 = FLY_GENE1,id2=FLY_GENE2)
+fly_genetic_interactions= fly_genetic_interactions%>%rename(id1 = FLY_GENE1,id2=FLY_GENE2)
 res = input_interactions%>%merge(.,fly_genetic_interactions,by=c("id1","id2"))
 }
 
