@@ -22,6 +22,7 @@ if (s=="ppi")
 {
 data(flybase_ppi)
 
+flybase_ppi = flybase_ppi%>%dplyr::rename(id1 = FLY_GENE1,id2=FLY_GENE2)
 res = input_interactions%>%merge(.,flybase_ppi,by=c("id1","id2"))
 
 res
@@ -47,6 +48,8 @@ res = input_interactions%>%rowwise()%>%do(rna = fun(.$id1[1],.$id2[1]))%>%mutate
 if (s=="tf")
 {
 data(tf_gene)
+tf_gene= tf_gene%>%dplyr::rename(id1 = FLY_TF_GENE,id2=FLY_TARGET_GENE)
+
 res = input_interactions%>%merge(.,tf_gene,by=c("id1","id2"))
 }
 
