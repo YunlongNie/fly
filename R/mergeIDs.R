@@ -16,7 +16,7 @@
 mergeIDs= function(input,merge_id_x = c('id1'),merge_id_y=c("CG_ID",  "flybaseID" , "genesymbol"))
 {
 data(FlyBase_IDs)
-ID_data=  read.delim(FlyBase_IDs)%>%dplyr::rename(CG_ID=submitted_id,flybaseID = current_id, genesymbol = current_symbol)%>%select(-converted_id )%>%unique
+ID_data=  FlyBase_IDs%>%dplyr::rename(CG_ID=submitted_id,flybaseID = current_id, genesymbol = current_symbol)%>%select(-converted_id )%>%unique
 names(ID_data) = paste(merge_id_x,names(ID_data),sep="_")
 
 output = input%>%merge(.,ID_data,by.x=merge_id_x,by.y=paste(merge_id_x,merge_id_y,sep="_"),all.x=TRUE)
