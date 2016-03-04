@@ -2,6 +2,9 @@
 
 export(matched_id)
 export(mergeIDs)
+export(regfun_slos)
 export(search_interaction)
+import(DiceKriging)
 import(dplyr)
+import(matrixcalc)
 import(tidyr)
