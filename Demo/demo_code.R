@@ -5,5 +5,14 @@ data(fdlist)
 gene_target = "Myo31DF"
 yfd = fdlist[[which(names(fdlist)==matched_id(gene_target)$CG_ID)]]
 xnames = names(xfdlist)
+yname = xnames[which(names(fdlist)==matched_id(gene_target)$CG_ID)]
 xfdlist  = fdlist
-res = regfun_slos(xfdlist,yfd,time_obs,yname=xnames[14],xnames)
+res = regfun_slos(xfdlist,yfd,time_obs,yname,xnames)
+
+flyids = matched_id(xnames)%>%dplyr::select(CG_ID,genesymbol)%>%dplyr::rename(xname=CG_ID)
+regfd = res$estimated_fd%>%left_join(.,flyids,by="xname")
+regfuns = regfd$regfd
+
+
+i=5
+plot(regfuns[[i]],xlab="gene expression",ylab="regulation function",main=regfd$genesymbol[i])
