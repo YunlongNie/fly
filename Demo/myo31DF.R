@@ -1,6 +1,7 @@
+install_github('YunlongNie/flyfuns')
+library(flyfuns)
 time_obs = c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 
 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
-library(flyfuns)
 data(fdlist)
 gene_target = "Myo31DF"
 yfd = fdlist[[which(names(fdlist)==matched_id(gene_target)$CG_ID)]]
@@ -35,6 +36,8 @@ i=5
 plot(regfuns[[i]],xlab="gene expression",ylab="regulation function",main=regfd$genesymbol[i])
 
 # this demo code is also available by runing 
-install_github('YunlongNie/flyfuns')
+# install_github('YunlongNie/flyfuns')
+# demo(myo31DF,package = "flyfuns")
+
 
 
