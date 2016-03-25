@@ -13,6 +13,7 @@
 #' @import DiceKriging
 #' @import matrixcalc
 #' @import dplyr 
+#' @importFrom plyr alply
 #' @examples
 #' \dontrun{
 #' yfd = fdlist[[14]]
