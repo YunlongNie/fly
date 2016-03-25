@@ -25,7 +25,7 @@
 
 
 regfun_slos= function(xfdlist, yfd, time_obs, yname, xnames,
-  lambda = 1e-3,gammas=1e-3,maxiteration=500,
+  lambda = 1e-3,gamma=1e-3,maxiteration=500,
   d =5, K = 30,maxabs = 1e-6,verbose=TRUE,type="derivatives"
      )
 {
@@ -112,7 +112,7 @@ break_while=FALSE
 beta = 2*beta0
 beta_new = beta0
 
-if (verbose)  cat('\n################\nComputing when fscad penalty parameter is :', lambda ,'and smoothing parameter is: ',gamma)
+if (verbose)  cat('\n################\nComputing when fscad penalty parameter is :', lambda ,'and smoothing parameter is: ', gamma)
 
  
 i=1
