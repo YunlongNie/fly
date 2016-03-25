@@ -1,20 +1,36 @@
+# mark sure your R version is at least 3.1.2 otherwise you cannot install dplyr package 
+install.packages('DiceKriging')
+install.packages('dplyr')
+install.packages('tidyr')
+install.packages('matrixcalc')
+install.packages('devtools')
+install.packages('fda')
+library(devtools)
+library(dplyr)
+library(fda)
+
+
+# this R pacakge is available on https://github.com/YunlongNie/flyfuns
 install_github('YunlongNie/flyfuns')
+
 library(flyfuns)
 time_obs = c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 
 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
-data(fdlist)
-gene_target = "Myo31DF"
-yfd = fdlist[[which(names(fdlist)==matched_id(gene_target)$CG_ID)]]
+data(fdlist) 
+
+gene_target = "Myo31DF" # the target gene name 
+yfd = fdlist[[which(names(fdlist)==matched_id(gene_target)$CG_ID)]] 
+xfdlist  = fdlist 
 xnames = names(xfdlist)
 yname = xnames[which(names(fdlist)==matched_id(gene_target)$CG_ID)]
-xfdlist  = fdlist # each element in the xfdlist is a fd object 
+# each element in the xfdlist is a fd object 
 
 
 # step 1 specify the tuning parameter grid
-parameter_grid = expand.grid(lambda=10^c(-2,-3,-4),gamma=10^c(-2,-3,-4))
+parameter_grid = expand.grid(lambda=10^c(-2,-3),gamma=10^c(-2,-3))
 
 # step 2 run the estimation function for each tuning parameter set
-res_all = parameter_grid%>%head(.,2)%>%rowwise()%>%do(lambda=.$lambda[1],gamma=.$gamma[1],res = regfun_slos(xfdlist,yfd,time_obs,yname,xnames,lambda=.$lambda[1],gamma=.$gamma[1]))
+res_all = parameter_grid%>%rowwise()%>%do(lambda=.$lambda[1],gamma=.$gamma[1],res = regfun_slos(xfdlist,yfd,time_obs,yname,xnames,lambda=.$lambda[1],gamma=.$gamma[1],verbose=FALSE))
 
 # step 3 select the optimal tuning parameter based on AICc
 
@@ -26,7 +42,7 @@ res = res_all$res[optimal_index]
 
 flyids = matched_id(xnames)%>%dplyr::select(CG_ID,genesymbol)%>%dplyr::rename(xname=CG_ID) # merge the CG_ID with genesymbols 
 
-regfd = res$estimated_fd%>%left_join(.,flyids,by="xname")
+regfd = res[[1]]$estimated_fd%>%left_join(.,flyids,by="xname")
 
 regfuns = regfd$regfd # regfuns contains all the estimated regulation functions
 
@@ -36,7 +52,6 @@ i=5
 plot(regfuns[[i]],xlab="gene expression",ylab="regulation function",main=regfd$genesymbol[i])
 
 # this demo code is also available by runing 
-# install_github('YunlongNie/flyfuns')
 # demo(myo31DF,package = "flyfuns")
 
 
