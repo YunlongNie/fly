@@ -5,7 +5,7 @@
 \title{This function compute the regulation functions via slos penalty}
 \usage{
 regfun_slos(xfdlist, yfd, time_obs, yname, xnames, lambda = 0.001,
-  gammas = 0.001, maxiteration = 500, d = 5, K = 30, maxabs = 1e-06,
+  gamma = 0.001, maxiteration = 500, d = 5, K = 30, maxabs = 1e-06,
   verbose = TRUE, type = "derivatives")
 }
 \arguments{
@@ -21,11 +21,11 @@ regfun_slos(xfdlist, yfd, time_obs, yname, xnames, lambda = 0.001,
 
 \item{lambda}{the fscad penalty parameter}
 
+\item{gamma}{the smoothing parameter}
+
 \item{d}{the order}
 
 \item{K}{the number of inside knots}
-
-\item{gamma}{the smoothing parameter}
 }
 \description{
 This function compute the regulation functions via slos penalty

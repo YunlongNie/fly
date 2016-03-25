@@ -114,10 +114,8 @@ beta_new = beta0
 
 if (verbose)  cat('\n################\nComputing when fscad penalty parameter is :', lambda ,'and smoothing parameter is: ', gamma)
 
- 
+nreg = length(xfdlist)
 i=1
-
-
 while(max(abs(beta_new-beta)) >1e-6)
  {
 
