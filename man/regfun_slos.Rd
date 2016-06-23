@@ -4,9 +4,10 @@
 \alias{regfun_slos}
 \title{This function compute the regulation functions via slos penalty}
 \usage{
-regfun_slos(xfdlist, yfd, time_obs, yname, xnames, lambda = 0.001,
-  gamma = 0.001, maxiteration = 500, d = 5, K = 30, maxabs = 1e-06,
-  verbose = TRUE, type = "derivatives")
+regfun_slos(xfdlist, yfd, Lcholy, time_obs = seq(0, 23, len = 24), yname,
+  xnames, lambda = 0.001, gamma = 0.001, maxiteration = 500,
+  lambdaI = 1e+05, d = 5, K = 30, maxabs = 1e-06, verbose = TRUE,
+  type = "derivatives")
 }
 \arguments{
 \item{xfdlist}{a list with each element being a fd object, for all the predictors}

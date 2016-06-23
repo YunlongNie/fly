@@ -23,10 +23,10 @@
 #' res = regfun_slos(xfdlist,yfd,time_obs,yname=xnames[14],xnames)
 #' }
 
+     
 
-
-regfun_slos= function(xfdlist, yfd, time_obs, yname, xnames,
-  lambda = 1e-3,gamma=1e-3,maxiteration=500,
+regfun_slos= function(xfdlist, yfd,   Lcholy , time_obs=seq(0,23,len=24), yname, xnames,
+  lambda = 1e-3,gamma=1e-3,maxiteration=500,lambdaI=1e5,
   d =5, K = 30,maxabs = 1e-6,verbose=TRUE,type="derivatives"
      )
 {
@@ -46,8 +46,9 @@ xbasis = data_frame(xname =xnames,xfd = xfdlist)%>%group_by(xname)%>%do(xfd=.$xf
 x = xbasis%>%do(x = eval.fd(time_obs,.$xfd))%>%first%>%do.call(cbind,.)
 colnames(x) = xnames
 
-Phi_matrix_big =  xbasis%>%group_by(xname)%>%
-      do(Phi_matrix= t(eval.basis(as.vector(eval.fd(time_obs,.$xfd[[1]])),.$xbasis[[1]],Lfdobj=0)))%>%broom::tidy(Phi_matrix)%>%data.frame%>%dplyr::select(-matches('name'))%>%as.matrix
+Phi_matrix_big0 =  (xbasis%>%group_by(xname)%>%
+      do(Phi_matrix= t(eval.basis(as.vector(eval.fd(time_obs,.$xfd[[1]])),.$xbasis[[1]],Lfdobj=0)))%>%broom::tidy(Phi_matrix)%>%data.frame%>%dplyr::select(-matches('name'))%>%as.matrix)
+Phi_matrix_big = Phi_matrix_big0%*%t(Lcholy)
 
 
 wtide_fun = function(xfd,xbasis,time_obs){
@@ -161,8 +162,8 @@ Phi_nonzero_bigg = Phi_matrix_big[nonezero,]
 G_nonzero = crossprod(t(Phi_nonzero_bigg),t(Phi_nonzero_bigg))
 V_nonzero = V_all[nonezero,nonezero]
 W0_nonzero = W0_all[nonezero,nonezero]
-right_nonzero =  crossprod(t(Phi_nonzero_bigg),matrix(y))
-mat= (G_nonzero + length(y)*gamma*V_nonzero + length(y)*W0_nonzero+10^3*Wtilde[nonezero,nonezero])
+right_nonzero =  crossprod(t(Phi_nonzero_bigg),Lcholy%*%matrix(y))
+mat= (G_nonzero + length(y)*gamma*V_nonzero + length(y)*W0_nonzero+length(y)*lambdaI*Wtilde[nonezero,nonezero])
 beta_new_nonzero =  try(solve(mat,right_nonzero))
 
 if (class(beta_new_nonzero) == "try-error"|any(is.na(beta_new_nonzero))) {beta_new=NA;break_while=TRUE;cat('\nmat singular!loop break!\n');break}
@@ -179,14 +180,16 @@ if (i > maxiteration)
 
 if (break_while) break
 
-beta_new[abs(beta_new)<1e-10]=0
+
 
 (trace= matrix.trace(as.matrix(crossprod(as.matrix(Phi_nonzero_bigg),solve(mat,as.matrix(Phi_nonzero_bigg))))))
-haty = as.numeric(beta_new%*%as.matrix(Phi_matrix_big))
+haty = as.numeric(beta_new%*%as.matrix(Phi_matrix_big0))
 mse = mean((haty-y)^2)
-AICc = length(y)*log(mse) + 2*length(y)/(length(y)-trace)*trace
 
-
+AIC = length(y)*log(mse) + 2*trace
+AICc = AIC + 2*trace*(trace+1)/(length(y) - trace- 1)
+BIC = length(y)*log(mse) + trace*log(length(y))
+gcv = mse/((length(y)-  trace)/length(y))^2
 if (verbose==TRUE)  
   {
     sprintf('\n#\nThe different between the final two interations are %s\nThe total number of nonzero parameters are %s out of %s \nThe total number of interation is %s\n', format(max(abs(beta_new-beta)),digits=3),sum(nonezero),length(beta_new),i)%>%cat
@@ -200,7 +203,9 @@ names(res_final) = c('xname',"regfd","coefreg","xtrafd","regbasisfd")
 
 coefm = matrix(beta_new,ncol=length(xnames));colnames(coefm) = xnames
 
-return(list(coef = coefm, estimated_fd =res_final, x=x, xname= xnames, y=y,intery=intery, time=time_obs,AICc=AICc,targent_gene = yname,type=type))
+return(list(coef = coefm, estimated_fd =res_final, x=x, xname= xnames, y=y,haty = haty, intery=intery, time=time_obs,trace=trace, AIC=AIC, AICc=AICc,BIC=BIC,gcv = gcv, mse = mse , targent_gene = yname,type=type,lambda=lambda,gamma=gamma))
+
 }
+
 
 
