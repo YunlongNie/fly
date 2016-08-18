@@ -24,7 +24,7 @@ if(class(CG_ID)=="try-error") {
  	print(' no matched CG ID; please enter the valiad gene name.')
  	return(NULL)
 } else {
-	dataplot = data.frame(value=drosophila[CG_ID,timepoints$symbol],time=timepoints$realtime)
+	dataplot = data.frame(value=2^drosophila[CG_ID,timepoints$symbol],time=timepoints$realtime)
 	dataplot$ID= paste0(matched_id(input)%>%head(.,1)%>%as.character%>%unique,collapse="_")
 	
 	return(dataplot)
