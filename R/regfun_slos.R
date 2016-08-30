@@ -27,7 +27,7 @@
 
 regfun_slos= function(xfdlist, yfd,   Lcholy , time_obs=seq(0,23,len=24), yname, xnames,
   lambda = 1e-3,gamma=1e-3,maxiteration=500,lambdaI=1e5,
-  d =5, K = 30,maxabs = 1e-6,verbose=TRUE,type="derivatives"
+  d =5, K = 5,maxabs = 1e-6,verbose=TRUE,type="derivatives"
      )
 {
 
@@ -51,12 +51,20 @@ Phi_matrix_big0 =  (xbasis%>%group_by(xname)%>%
 Phi_matrix_big = Phi_matrix_big0%*%t(Lcholy)
 
 
+# wtide_fun = function(xfd,xbasis,time_obs){
+# rangeX = range(c(eval.fd(c(time_obs,seq(0,max(time_obs),len=1001)),xfd)))
+# weightm = eval.basis(seq(min(rangeX),max(rangeX),length=10000),xbasis)%>%colSums%>%as.numeric
+# wtilde = matrix(rep(weightm, each=length(weightm)),ncol=length(weightm))*matrix(rep(weightm, each=length(weightm)),ncol=length(weightm),byrow=TRUE)
+# return(wtilde)  
+# }
+
 wtide_fun = function(xfd,xbasis,time_obs){
-rangeX = range(c(eval.fd(c(time_obs,seq(0,max(time_obs),len=1001)),xfd)))
-weightm = eval.basis(seq(min(rangeX),max(rangeX),length=10000),xbasis)%>%colSums%>%as.numeric
+Xtra = eval.fd(time_obs,xfd)%>%as.numeric
+weightm = eval.basis(Xtra,xbasis)%>%colSums%>%as.numeric
 wtilde = matrix(rep(weightm, each=length(weightm)),ncol=length(weightm))*matrix(rep(weightm, each=length(weightm)),ncol=length(weightm),byrow=TRUE)
 return(wtilde)  
 }
+
 
 
 Wtilde = xbasis%>%group_by(xname)%>%do(wtide = {wtide_fun(.$xfd[[1]],.$xbasis[[1]],time_obs)})%>%dplyr::select(wtide)%>%ungroup%>%first%>%do.call(bdiag,.)
@@ -104,6 +112,9 @@ rowwise()%>%do(temp = eval.penalty(xbasis0,int2Lfd(0),rng=c(.$knot,.$knotlead)))
 }
 
 
+
+
+
 Wtemp = xbasis%>%group_by(xname)%>%do(w_temp  = {wtemp(.$xbasis[[1]])})
 W_temp = Wtemp$w_temp
 
@@ -138,7 +149,7 @@ for (j in 2:(length(W_temp[[p]]$temp)+1))
           if (temp1!=0) # if temp1 is too small makes it to be zero
           {
 
-              if (betaNorm < 1e-10)  # absTol cannot be too small then temp will be way too large absTol cannot be too small compared with lambda and (rangetemp[2]-rangetemp[1])/(K+1)
+              if (betaNorm < 1e-6)  # absTol cannot be too small then temp will be way too large absTol cannot be too small compared with lambda and (rangetemp[2]-rangetemp[1])/(K+1)
           {
          
           index_nonzero[(j-1):(j-1+d-1) + (p-1)*nspline]=FALSE; 
@@ -180,16 +191,20 @@ if (i > maxiteration)
 
 if (break_while) break
 
-
-
+haty_transform = as.numeric(t(beta_new_nonzero)%*%as.matrix(Phi_nonzero_bigg))
+y_transform = Lcholy%*%matrix(y)
+mse_transform = mean((y_transform -haty_transform)^2)
 (trace= matrix.trace(as.matrix(crossprod(as.matrix(Phi_nonzero_bigg),solve(mat,as.matrix(Phi_nonzero_bigg))))))
+
+AIC = length(y)*log(mse_transform) + 2*trace
+AICc = AIC + 2*trace*(trace+1)/(length(y) - trace- 1)
+BIC = length(y)*log(mse_transform) + trace*log(length(y))
+gcv = mse_transform*length(y)/((length(y)-  trace)/length(y))^2
+
 haty = as.numeric(beta_new%*%as.matrix(Phi_matrix_big0))
 mse = mean((haty-y)^2)
 
-AIC = length(y)*log(mse) + 2*trace
-AICc = AIC + 2*trace*(trace+1)/(length(y) - trace- 1)
-BIC = length(y)*log(mse) + trace*log(length(y))
-gcv = mse/((length(y)-  trace)/length(y))^2
+
 if (verbose==TRUE)  
   {
     sprintf('\n#\nThe different between the final two interations are %s\nThe total number of nonzero parameters are %s out of %s \nThe total number of interation is %s\n', format(max(abs(beta_new-beta)),digits=3),sum(nonezero),length(beta_new),i)%>%cat
@@ -203,7 +218,7 @@ names(res_final) = c('xname',"regfd","coefreg","xtrafd","regbasisfd")
 
 coefm = matrix(beta_new,ncol=length(xnames));colnames(coefm) = xnames
 
-return(list(coef = coefm, estimated_fd =res_final, x=x, xname= xnames, y=y,haty = haty, intery=intery, time=time_obs,trace=trace, AIC=AIC, AICc=AICc,BIC=BIC,gcv = gcv, mse = mse , targent_gene = yname,type=type,lambda=lambda,gamma=gamma))
+return(list(coef = coefm, estimated_fd =res_final, x=x, xname= xnames, transformy =y_transform , hatytransform = haty_transform, y=y,haty = haty, intery=intery, time=time_obs,trace=trace, AIC=AIC, AICc=AICc,BIC=BIC,gcv = gcv, mse = mse ,mse_transform = mse_transform, targent_gene = yname,type=type,lambda=lambda,gamma=gamma,Lcholy = Lcholy))
 
 }
 

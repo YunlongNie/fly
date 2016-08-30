@@ -15,7 +15,7 @@
 gene_curve= function(input_ids,plot.only = TRUE)
 {
 data(drosophila)
-
+data(timepoints)
 res = ldply(input_ids, function(input){
 
 print(input)
