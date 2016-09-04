@@ -129,7 +129,7 @@ if (verbose)  cat('\n################\nComputing when fscad penalty parameter is
 
 nreg = length(xfdlist)
 i=1
-while(max(abs(beta_new-beta)) >1e-6)
+while(max(abs(beta_new-beta)) >maxabs)
  {
 
 index_nonzero = rep(TRUE,length(beta0))
@@ -191,6 +191,7 @@ if (i > maxiteration)
 
 if (break_while) break
 
+beta_new_nonzero[abs(beta_new_nonzero)<=maxabs]=0
 haty_transform = as.numeric(t(beta_new_nonzero)%*%as.matrix(Phi_nonzero_bigg))
 y_transform = Lcholy%*%matrix(y)
 mse_transform = mean((y_transform -haty_transform)^2)
