@@ -1,58 +1,32 @@
-# mark sure your R version is at least 3.1.2 otherwise you cannot install dplyr package 
-install.packages('DiceKriging')
-install.packages('dplyr')
-install.packages('tidyr')
-install.packages('matrixcalc')
-install.packages('devtools')
-install.packages('fda')
-library(devtools)
-library(dplyr)
 library(fda)
-
-
-# this R pacakge is available on https://github.com/YunlongNie/flyfuns
-install_github('YunlongNie/flyfuns')
-
+library(DiceKriging)
+library(matrixcalc)
+library(plyr)
+library(dplyr)
 library(flyfuns)
-time_obs = c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8, 9, 
-10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
-data(fdlist) 
-
-gene_target = "Myo31DF" # the target gene name 
-yfd = fdlist[[which(names(fdlist)==matched_id(gene_target)$CG_ID)]] 
-xfdlist  = fdlist 
-xnames = names(xfdlist)
-yname = xnames[which(names(fdlist)==matched_id(gene_target)$CG_ID)]
-# each element in the xfdlist is a fd object 
+library(broom)
 
 
-# step 1 specify the tuning parameter grid
-parameter_grid = expand.grid(lambda=10^c(-2,-3),gamma=10^c(-2,-3))
 
-# step 2 run the estimation function for each tuning parameter set
-res_all = parameter_grid%>%rowwise()%>%do(lambda=.$lambda[1],gamma=.$gamma[1],res = regfun_slos(xfdlist,yfd,time_obs,yname,xnames,lambda=.$lambda[1],gamma=.$gamma[1],verbose=FALSE))
+load('demo_data.Rdata') 
+# the data file contains two list:  fdlist_20genes and Lchol 
+# fdlist_20genes is a list with 20 elements and each element correponds to a gene's smoothing trajectory 
+# Lchol is the precondioning matrix for each gene 
 
-# step 3 select the optimal tuning parameter based on AICc
+GeneName= matched_id("Myo31DF")$CG_ID
+yindex = which(names(fdlist_20genes)==GeneName)
 
-optimal_index=  which.min(sapply(res_all$res, function(x) x$AICc))
+res_true= regfun_slos_fun(lambda=10, gamma=1e-3, xfdlist=fdlist_20genes, yfd=fdlist_20genes[[yindex]]  , Lcholy = Lchol[[GeneName]][1:24,1:24], time_obs=0:23,  yname= GeneName,xnames =names(fdlist_20genes),lambdaI = 1e4,maxiteration=500,
+    d =4, K = 5,maxabs = 1e-6,verbose=FALSE,type="derivatives"
+)
 
-# step 4 extract the regulation function estimation
 
-res = res_all$res[optimal_index]
+par(mfrow=c(1,nrow(res_true$estimated_fd) ))
+for (j in 1:nrow(res_true$estimated_fd) )
+{
+  
+  plot(res_true$estimated_fd$regfd[[j]],main=flyfuns::matched_id(res_true$estimated_fd$xname[j])$genesymbol[1],col=j,lwd=2)
 
-flyids = matched_id(xnames)%>%dplyr::select(CG_ID,genesymbol)%>%dplyr::rename(xname=CG_ID) # merge the CG_ID with genesymbols 
-
-regfd = res[[1]]$estimated_fd%>%left_join(.,flyids,by="xname")
-
-regfuns = regfd$regfd # regfuns contains all the estimated regulation functions
-
-# for example we plot the estimated regulation function from gene sls, which is the 5th element in the list 
-
-i=5
-plot(regfuns[[i]],xlab="gene expression",ylab="regulation function",main=regfd$genesymbol[i])
-
-# this demo code is also available by runing 
-# demo(myo31DF,package = "flyfuns")
-
+}
 
 
