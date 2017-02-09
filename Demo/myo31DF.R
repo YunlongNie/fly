@@ -1,3 +1,14 @@
+install.packages('DiceKriging')
+install.packages('dplyr')
+install.packages('tidyr')
+install.packages('matrixcalc')
+install.packages('devtools')
+install.packages('fda')
+install.packages('broom')
+
+install_github('YunlongNie/flyfuns')
+
+
 library(fda)
 library(DiceKriging)
 library(matrixcalc)
