@@ -1,14 +1,17 @@
+# please install all these packages first 
 install.packages('DiceKriging')
 install.packages('dplyr')
 install.packages('tidyr')
 install.packages('matrixcalc')
 install.packages('devtools')
 install.packages('fda')
-install.packages('broom')
+install.packages('broom') 
 
+# this command will install our package flyfuns from github
 install_github('YunlongNie/flyfuns')
 
 
+# load all the R packages 
 library(fda)
 library(DiceKriging)
 library(matrixcalc)
