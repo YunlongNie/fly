@@ -219,7 +219,7 @@ coefm = matrix(beta_new,ncol=length(xnames));colnames(coefm) = xnames
 
 hayt = function(t,res_final)
  {
-      res_true_final%>%dplyr::mutate(xt =eval.fd(t,xtrafd))%>%dplyr::mutate(regt = as.numeric(eval.fd(xt,regfd)))%>%dplyr::select(regt)%>%ungroup%>%with(regt)
+      res_final%>%dplyr::mutate(xt =eval.fd(t,xtrafd))%>%dplyr::mutate(regt = as.numeric(eval.fd(xt,regfd)))%>%dplyr::select(regt)%>%ungroup%>%with(regt)
  }
  haty =do.call(rbind,lapply(seq(0,23,len=24),function(t) {
      hayt(t,res_final=res_final)
